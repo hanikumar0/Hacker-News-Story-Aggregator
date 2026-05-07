@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { fetchBookmarks, toggleBookmark } from '@/lib/api';
+import { fetchBookmarks } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { useBookmarks } from '@/context/BookmarkContext';
 import StoryList from '@/components/stories/StoryList';
 import Section from '@/components/layout/Section';
 import { Bookmark, Inbox } from 'lucide-react';
@@ -9,6 +10,7 @@ import { toast } from 'react-hot-toast';
 
 export default function BookmarksPage() {
     const { user, loading: authLoading } = useAuth();
+    const { bookmarkedIds, toggleBookmark } = useBookmarks();
     const [bookmarks, setBookmarks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -30,17 +32,7 @@ export default function BookmarksPage() {
         } else if (!authLoading) {
             setLoading(false);
         }
-    }, [user, authLoading]);
-
-    const handleRemoveBookmark = async (storyId: string) => {
-        try {
-            await toggleBookmark(storyId);
-            setBookmarks(bookmarks.filter(b => b._id !== storyId));
-            toast.success('Bookmark removed');
-        } catch (error) {
-            toast.error('Failed to remove bookmark');
-        }
-    };
+    }, [user, authLoading, bookmarkedIds]); // Re-fetch if bookmarkedIds change to keep this page in sync
 
     return (
         <Section className="space-y-12">
@@ -73,8 +65,8 @@ export default function BookmarksPage() {
                 <StoryList 
                     stories={bookmarks} 
                     loading={loading} 
-                    bookmarks={bookmarks.map(b => b._id)} 
-                    onBookmarkToggle={handleRemoveBookmark} 
+                    bookmarks={bookmarkedIds} 
+                    onBookmarkToggle={toggleBookmark} 
                 />
             )}
         </Section>

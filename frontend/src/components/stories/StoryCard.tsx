@@ -1,8 +1,9 @@
 "use client";
 import React from 'react';
-import { Bookmark, ThumbsUp, User, Clock, Globe, ArrowUpRight } from 'lucide-react';
+import { ThumbsUp, User, Clock, Globe, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Badge from '../ui/Badge';
+import BookmarkButton from './BookmarkButton';
 
 interface Story {
   _id: string;
@@ -11,6 +12,8 @@ interface Story {
   author: string;
   points: number;
   postedAt: string;
+  description?: string;
+  image?: string;
 }
 
 interface StoryCardProps {
@@ -35,9 +38,19 @@ const StoryCard: React.FC<StoryCardProps> = ({ story, isBookmarked, onBookmarkTo
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -5 }}
-            className="group glass-card p-6 bg-white border border-border-soft hover:border-violet-primary/20 transition-all duration-300"
+            className="group glass-card overflow-hidden bg-white border border-border-soft hover:border-violet-primary/20 transition-all duration-300 flex flex-col"
         >
-            <div className="flex flex-col h-full gap-6">
+            {/* Visual Header / Placeholder Image */}
+            <div className="h-48 w-full bg-surface-hover relative overflow-hidden group-hover:scale-105 transition-transform duration-700">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
+                <img 
+                    src={story.image || `https://images.unsplash.com/photo-1504715603411-b923902f242d?q=80&w=800&auto=format&fit=crop`} 
+                    alt={story.title}
+                    className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
+                />
+            </div>
+
+            <div className="flex flex-col flex-1 p-6 gap-5">
                 <div className="flex justify-between items-center gap-4">
                     <div className="flex items-center gap-2 min-w-0">
                         <div className="w-6 h-6 rounded-lg bg-surface flex items-center justify-center border border-border-soft shrink-0">
@@ -50,17 +63,22 @@ const StoryCard: React.FC<StoryCardProps> = ({ story, isBookmarked, onBookmarkTo
                     </Badge>
                 </div>
 
-                <div className="flex-1">
+                <div className="flex-1 space-y-3">
                     <a 
                         href={story.url} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="block group-hover:text-violet-primary transition-all duration-300"
                     >
-                        <h3 className="text-xl md:text-2xl font-black text-text-primary leading-snug tracking-tight line-clamp-3">
+                        <h3 className="text-xl font-black text-text-primary leading-snug tracking-tight line-clamp-2">
                             {story.title}
                         </h3>
                     </a>
+                    {story.description && (
+                        <p className="text-sm text-text-secondary line-clamp-3 leading-relaxed">
+                            {story.description}
+                        </p>
+                    )}
                 </div>
 
                 <div className="pt-5 border-t border-border-soft flex flex-wrap items-center justify-between gap-3">
@@ -80,16 +98,10 @@ const StoryCard: React.FC<StoryCardProps> = ({ story, isBookmarked, onBookmarkTo
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => onBookmarkToggle?.(story._id)}
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                                isBookmarked 
-                                    ? 'gradient-primary text-white shadow-lg shadow-violet-primary/20' 
-                                    : 'bg-surface text-text-secondary hover:text-violet-primary hover:bg-violet-soft'
-                            }`}
-                        >
-                            <Bookmark size={16} fill={isBookmarked ? "currentColor" : "none"} />
-                        </button>
+                        <BookmarkButton 
+                            isBookmarked={!!isBookmarked} 
+                            onClick={() => onBookmarkToggle?.(story._id)} 
+                        />
                         <a 
                             href={story.url} 
                             target="_blank" 

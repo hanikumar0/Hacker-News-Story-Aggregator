@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { BookmarkProvider } from '@/context/BookmarkContext';
+
 export default function DashboardLayout({
     children,
 }: {
@@ -34,7 +36,8 @@ export default function DashboardLayout({
     ];
 
     return (
-        <div className="min-h-screen bg-white flex">
+        <BookmarkProvider>
+            <div className="min-h-screen bg-white flex">
             {/* Sidebar - Desktop */}
             <aside 
                 className={`hidden lg:flex flex-col border-r border-border-soft bg-white transition-all duration-500 ease-in-out ${
@@ -128,5 +131,6 @@ export default function DashboardLayout({
                 </div>
             </main>
         </div>
+        </BookmarkProvider>
     );
 }

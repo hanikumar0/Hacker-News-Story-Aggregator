@@ -1,33 +1,27 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { fetchStories, toggleBookmark, triggerScrape, fetchBookmarks } from '@/lib/api';
+import { fetchStories, triggerScrape } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { useBookmarks } from '@/context/BookmarkContext';
 import StoryList from '@/components/stories/StoryList';
 import Section from '@/components/layout/Section';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { RefreshCw, Sparkles, TrendingUp } from 'lucide-react';
+import { RefreshCw, TrendingUp } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function Feed() {
     const [stories, setStories] = useState<any[]>([]);
-    const [bookmarks, setBookmarks] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [syncing, setSyncing] = useState(false);
     const { user } = useAuth();
+    const { bookmarkedIds, toggleBookmark } = useBookmarks();
 
     const getStories = async () => {
         try {
             setLoading(true);
             const { data } = await fetchStories();
             setStories(data.data);
-            
-            // If user is logged in, also fetch bookmarks to sync UI state
-            if (user) {
-                const { data: bookmarkData } = await fetchBookmarks();
-                // Map to IDs since getBookmarks returns populated objects
-                setBookmarks(bookmarkData.data.map((b: any) => b._id));
-            }
         } catch (error) {
             console.error(error);
         } finally {
@@ -49,21 +43,6 @@ export default function Feed() {
             toast.error('Sync failed');
         } finally {
             setSyncing(false);
-        }
-    };
-
-    const handleBookmark = async (storyId: string) => {
-        if (!user) {
-            toast.error('Sign in required');
-            return;
-        }
-        try {
-            const { data } = await toggleBookmark(storyId);
-            setBookmarks(data.bookmarks || []);
-            toast.success('Collection updated');
-        } catch (error) {
-            console.error('Bookmark Error:', error);
-            toast.error('Update failed');
         }
     };
 
@@ -114,8 +93,8 @@ export default function Feed() {
                 <StoryList 
                     stories={stories} 
                     loading={loading} 
-                    bookmarks={bookmarks} 
-                    onBookmarkToggle={handleBookmark} 
+                    bookmarks={bookmarkedIds} 
+                    onBookmarkToggle={toggleBookmark} 
                 />
             </Section>
         </div>
