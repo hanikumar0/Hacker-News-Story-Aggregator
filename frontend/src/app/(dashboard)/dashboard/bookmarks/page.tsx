@@ -1,12 +1,14 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { fetchBookmarks, toggleBookmark } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import StoryList from '@/components/stories/StoryList';
 import Section from '@/components/layout/Section';
 import { Bookmark, Inbox } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function BookmarksPage() {
+    const { user, loading: authLoading } = useAuth();
     const [bookmarks, setBookmarks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -23,8 +25,12 @@ export default function BookmarksPage() {
     };
 
     useEffect(() => {
-        getBookmarks();
-    }, []);
+        if (user) {
+            getBookmarks();
+        } else if (!authLoading) {
+            setLoading(false);
+        }
+    }, [user, authLoading]);
 
     const handleRemoveBookmark = async (storyId: string) => {
         try {

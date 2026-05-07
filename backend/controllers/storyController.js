@@ -50,7 +50,7 @@ exports.getStoryById = async (req, res) => {
 exports.toggleBookmark = async (req, res) => {
     try {
         const storyId = req.params.id;
-        const user = req.user; // Already populated by protect middleware
+        const user = req.user;
 
         // Verify story exists
         const story = await Story.findById(storyId);
@@ -58,13 +58,12 @@ exports.toggleBookmark = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Story not found' });
         }
 
-        // Check if already bookmarked (handling ObjectId comparison)
         const isBookmarked = user.bookmarks.some(id => id.toString() === storyId);
 
         if (isBookmarked) {
-            user.bookmarks = user.bookmarks.filter(id => id.toString() !== storyId);
+            user.bookmarks.pull(storyId);
         } else {
-            user.bookmarks.push(storyId);
+            user.bookmarks.addToSet(storyId);
         }
 
         await user.save();
@@ -72,7 +71,7 @@ exports.toggleBookmark = async (req, res) => {
         res.status(200).json({ 
             success: true, 
             message: isBookmarked ? 'Bookmark removed' : 'Bookmark added',
-            bookmarks: user.bookmarks 
+            bookmarks: user.bookmarks.map(id => id.toString()) 
         });
     } catch (error) {
         console.error('Bookmark toggle error:', error);
@@ -85,8 +84,18 @@ exports.toggleBookmark = async (req, res) => {
 exports.getBookmarks = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).populate('bookmarks');
-        res.status(200).json({ success: true, count: user.bookmarks.length, data: user.bookmarks });
+        
+        // Filter out any bookmarks that could not be populated (e.g., if story was deleted)
+        // This ensures the frontend doesn't receive null values which could cause crashes
+        const validBookmarks = (user.bookmarks || []).filter(story => story !== null);
+        
+        res.status(200).json({ 
+            success: true, 
+            count: validBookmarks.length, 
+            data: validBookmarks 
+        });
     } catch (error) {
+        console.error('Get Bookmarks error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
