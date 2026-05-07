@@ -12,6 +12,12 @@ it two part because loom only give 5 min recoeridng time to the freee users and 
 
 ---
 
+## 🌍 Live Demo
+- **Frontend (Application)**: [https://hacker-news-story-aggregator-fronte.vercel.app](https://hacker-news-story-aggregator-fronte.vercel.app)
+- **Backend (API)**: [https://hacker-news-story-aggregator-backen.vercel.app](https://hacker-news-story-aggregator-backen.vercel.app)
+
+---
+
 ## 🌟 Key Features
 
 ### 1. Advanced Web Scraper
