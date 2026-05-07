@@ -50,9 +50,16 @@ exports.getStoryById = async (req, res) => {
 exports.toggleBookmark = async (req, res) => {
     try {
         const storyId = req.params.id;
-        const user = await User.findById(req.user.id);
+        const user = req.user; // Already populated by protect middleware
 
-        const isBookmarked = user.bookmarks.includes(storyId);
+        // Verify story exists
+        const story = await Story.findById(storyId);
+        if (!story) {
+            return res.status(404).json({ success: false, message: 'Story not found' });
+        }
+
+        // Check if already bookmarked (handling ObjectId comparison)
+        const isBookmarked = user.bookmarks.some(id => id.toString() === storyId);
 
         if (isBookmarked) {
             user.bookmarks = user.bookmarks.filter(id => id.toString() !== storyId);
@@ -68,6 +75,7 @@ exports.toggleBookmark = async (req, res) => {
             bookmarks: user.bookmarks 
         });
     } catch (error) {
+        console.error('Bookmark toggle error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 };

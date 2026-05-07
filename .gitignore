@@ -13,3 +13,4 @@ yarn-error.log*
 *.swp
 *.swo
 .env*.local
+loom_walkthrough_script.md

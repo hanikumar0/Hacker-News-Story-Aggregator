@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { fetchStories, toggleBookmark, triggerScrape } from '@/lib/api';
+import { fetchStories, toggleBookmark, triggerScrape, fetchBookmarks } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import StoryList from '@/components/stories/StoryList';
 import Section from '@/components/layout/Section';
@@ -21,6 +21,13 @@ export default function Feed() {
             setLoading(true);
             const { data } = await fetchStories();
             setStories(data.data);
+            
+            // If user is logged in, also fetch bookmarks to sync UI state
+            if (user) {
+                const { data: bookmarkData } = await fetchBookmarks();
+                // Map to IDs since getBookmarks returns populated objects
+                setBookmarks(bookmarkData.data.map((b: any) => b._id));
+            }
         } catch (error) {
             console.error(error);
         } finally {
@@ -55,6 +62,7 @@ export default function Feed() {
             setBookmarks(data.bookmarks || []);
             toast.success('Collection updated');
         } catch (error) {
+            console.error('Bookmark Error:', error);
             toast.error('Update failed');
         }
     };
