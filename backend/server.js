@@ -29,15 +29,19 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, async () => {
-    console.log(`Server running on port ${PORT}`);
-    
-    // Auto scrape on startup
-    try {
-        console.log('Running initial scrape...');
-        await scrapeHackerNews();
-        console.log('Initial scrape completed.');
-    } catch (err) {
-        console.error('Initial scrape failed:', err.message);
-    }
-});
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, async () => {
+        console.log(`Server running on port ${PORT}`);
+        
+        // Auto scrape on startup
+        try {
+            console.log('Running initial scrape...');
+            await scrapeHackerNews();
+            console.log('Initial scrape completed.');
+        } catch (err) {
+            console.error('Initial scrape failed:', err.message);
+        }
+    });
+}
+
+module.exports = app;
