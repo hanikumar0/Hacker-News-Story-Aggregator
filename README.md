@@ -6,7 +6,9 @@ A premium, full-stack SaaS application that scrapes top stories from Hacker News
 
 ## 📺 Project Walkthrough
 > [!NOTE]
-> **Loom Video:** [Insert Your Loom Link Here]
+> **Loom Video:** [https://www.loom.com/share/b528cfc3feea40709d4ed9908e3b7605(part 1)
+https://www.loom.com/share/ac1904047c7c4bf2b6a13bebee3b4386(part2)]
+it two part because loom only give 5 min recoeridng time to the freee users and i have to explain all the features of the app.
 
 ---
 
