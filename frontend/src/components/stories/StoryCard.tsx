@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { ThumbsUp, User, Clock, Globe, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Badge from '../ui/Badge';
@@ -22,15 +22,45 @@ interface StoryCardProps {
   onBookmarkToggle?: (id: string) => void;
 }
 
+/**
+ * Generates a deterministic gradient for a given domain string.
+ * This ensures each source always gets the same colour pair — visually
+ * distinct cards without any external network requests.
+ */
+function getDomainGradient(domain: string): string {
+  // Simple hash: sum char codes then pick from a curated palette
+  let hash = 0;
+  for (let i = 0; i < domain.length; i++) {
+    hash = domain.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const palettes = [
+    'from-violet-500/30 to-indigo-600/30',
+    'from-emerald-500/30 to-cyan-600/30',
+    'from-orange-500/30 to-rose-600/30',
+    'from-sky-500/30 to-blue-600/30',
+    'from-purple-500/30 to-pink-600/30',
+    'from-teal-500/30 to-emerald-600/30',
+    'from-amber-500/30 to-orange-600/30',
+    'from-indigo-500/30 to-violet-600/30',
+  ];
+  return palettes[Math.abs(hash) % palettes.length];
+}
+
 const StoryCard: React.FC<StoryCardProps> = ({ story, isBookmarked, onBookmarkToggle }) => {
+    const [imgError, setImgError] = useState(false);
+
     let domain = 'news.ycombinator.com';
     try {
         if (story.url) {
             domain = new URL(story.url).hostname.replace('www.', '');
         }
     } catch (e) {
-        console.error('Invalid URL:', story.url);
+        // keep default domain
     }
+
+    const gradient = getDomainGradient(domain);
+    // Only attempt to render an <img> if the story actually has a valid image URL
+    const hasImage = !imgError && !!story.image && story.image.trim() !== '';
 
     return (
         <motion.div
@@ -40,14 +70,39 @@ const StoryCard: React.FC<StoryCardProps> = ({ story, isBookmarked, onBookmarkTo
             whileHover={{ y: -5 }}
             className="group glass-card overflow-hidden bg-white border border-border-soft hover:border-violet-primary/20 transition-all duration-300 flex flex-col"
         >
-            {/* Visual Header / Placeholder Image */}
-            <div className="h-48 w-full bg-surface-hover relative overflow-hidden group-hover:scale-105 transition-transform duration-700">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
-                <img 
-                    src={story.image || `https://images.unsplash.com/photo-1504715603411-b923902f242d?q=80&w=800&auto=format&fit=crop`} 
-                    alt={story.title}
-                    className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
+            {/* Card image header — graceful gradient fallback when no image */}
+            <div className={`h-48 w-full relative overflow-hidden bg-gradient-to-br ${gradient}`}>
+                {/* Subtle pattern overlay */}
+                <div className="absolute inset-0 opacity-5"
+                    style={{
+                        backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+                        backgroundSize: '24px 24px',
+                    }}
                 />
+
+                {hasImage ? (
+                    <>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-10" />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={story.image}
+                            alt=""
+                            role="presentation"
+                            className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
+                            onError={() => setImgError(true)}
+                        />
+                    </>
+                ) : (
+                    /* Gradient placeholder with domain initial */
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center space-y-2 opacity-40">
+                            <Globe size={32} className="mx-auto" />
+                            <p className="text-[10px] font-black uppercase tracking-widest truncate max-w-[160px]">
+                                {domain}
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="flex flex-col flex-1 p-6 gap-5">
@@ -64,9 +119,9 @@ const StoryCard: React.FC<StoryCardProps> = ({ story, isBookmarked, onBookmarkTo
                 </div>
 
                 <div className="flex-1 space-y-3">
-                    <a 
-                        href={story.url} 
-                        target="_blank" 
+                    <a
+                        href={story.url}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="block group-hover:text-violet-primary transition-all duration-300"
                     >
@@ -98,13 +153,13 @@ const StoryCard: React.FC<StoryCardProps> = ({ story, isBookmarked, onBookmarkTo
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <BookmarkButton 
-                            isBookmarked={!!isBookmarked} 
-                            onClick={() => onBookmarkToggle?.(story._id)} 
+                        <BookmarkButton
+                            isBookmarked={!!isBookmarked}
+                            onClick={() => onBookmarkToggle?.(story._id)}
                         />
-                        <a 
-                            href={story.url} 
-                            target="_blank" 
+                        <a
+                            href={story.url}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="w-10 h-10 bg-surface rounded-xl flex items-center justify-center text-text-secondary hover:text-violet-primary hover:bg-violet-soft transition-all"
                         >

@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: ['news.ycombinator.com'],
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: '**', // Allow any external image host
+            },
+        ],
     },
 };
 
