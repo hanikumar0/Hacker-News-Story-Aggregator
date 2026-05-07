@@ -1,38 +1,13 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { fetchBookmarks } from '@/lib/api';
-import { useAuth } from '@/context/AuthContext';
+import React from 'react';
 import { useBookmarks } from '@/context/BookmarkContext';
 import StoryList from '@/components/stories/StoryList';
 import Section from '@/components/layout/Section';
 import { Bookmark, Inbox } from 'lucide-react';
-import { toast } from 'react-hot-toast';
 
 export default function BookmarksPage() {
-    const { user, loading: authLoading } = useAuth();
-    const { bookmarkedIds, toggleBookmark } = useBookmarks();
-    const [bookmarks, setBookmarks] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    const getBookmarks = async () => {
-        try {
-            setLoading(true);
-            const { data } = await fetchBookmarks();
-            setBookmarks(data.data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (user) {
-            getBookmarks();
-        } else if (!authLoading) {
-            setLoading(false);
-        }
-    }, [user, authLoading, bookmarkedIds]); // Re-fetch if bookmarkedIds change to keep this page in sync
+    // Consume directly from global context — no extra fetch, no dependency loop
+    const { bookmarkedStories, bookmarkedIds, toggleBookmark, loading } = useBookmarks();
 
     return (
         <Section className="space-y-12">
@@ -49,7 +24,7 @@ export default function BookmarksPage() {
                 </p>
             </header>
 
-            {bookmarks.length === 0 && !loading ? (
+            {bookmarkedStories.length === 0 && !loading ? (
                 <div className="glass-panel py-32 text-center space-y-6">
                     <div className="w-20 h-20 bg-surface-hover/50 rounded-[2rem] flex items-center justify-center mx-auto border border-white/5">
                         <Inbox className="text-text-secondary" size={32} />
@@ -63,7 +38,7 @@ export default function BookmarksPage() {
                 </div>
             ) : (
                 <StoryList 
-                    stories={bookmarks} 
+                    stories={bookmarkedStories} 
                     loading={loading} 
                     bookmarks={bookmarkedIds} 
                     onBookmarkToggle={toggleBookmark} 

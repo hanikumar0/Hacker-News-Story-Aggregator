@@ -50,7 +50,7 @@ exports.getStoryById = async (req, res) => {
 exports.toggleBookmark = async (req, res) => {
     try {
         const storyId = req.params.id;
-        const user = req.user;
+        const userId = req.user._id;
 
         // Verify story exists
         const story = await Story.findById(storyId);
@@ -58,20 +58,31 @@ exports.toggleBookmark = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Story not found' });
         }
 
+        // Reload user from DB fresh to get the current bookmarks array
+        const user = await User.findById(userId).select('+bookmarks');
         const isBookmarked = user.bookmarks.some(id => id.toString() === storyId);
 
+        let updatedUser;
         if (isBookmarked) {
-            user.bookmarks.pull(storyId);
+            // Use $pull to remove — bypasses pre-save hook (no password re-hash)
+            updatedUser = await User.findByIdAndUpdate(
+                userId,
+                { $pull: { bookmarks: storyId } },
+                { new: true }
+            ).select('bookmarks');
         } else {
-            user.bookmarks.addToSet(storyId);
+            // Use $addToSet to add — prevents duplicates, bypasses pre-save hook
+            updatedUser = await User.findByIdAndUpdate(
+                userId,
+                { $addToSet: { bookmarks: storyId } },
+                { new: true }
+            ).select('bookmarks');
         }
-
-        await user.save();
 
         res.status(200).json({ 
             success: true, 
             message: isBookmarked ? 'Bookmark removed' : 'Bookmark added',
-            bookmarks: user.bookmarks.map(id => id.toString()) 
+            bookmarks: updatedUser.bookmarks.map(id => id.toString())
         });
     } catch (error) {
         console.error('Bookmark toggle error:', error);
