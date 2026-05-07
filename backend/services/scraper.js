@@ -7,6 +7,7 @@ const scrapeHackerNews = async () => {
         // Cache-bust the HN request so we always get the live front page,
         // not a stale response from Node's HTTP keep-alive agent or a CDN
         const { data } = await axios.get('https://news.ycombinator.com/', {
+            timeout: 10000, // 10 second timeout
             headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
