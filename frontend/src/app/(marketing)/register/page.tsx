@@ -18,7 +18,7 @@ export default function RegisterPage() {
             const { data } = await register(formData);
             loginUser(data.user, data.token);
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Registration failed');
+            // Error is handled by global API interceptor
         } finally {
             setLoading(false);
         }

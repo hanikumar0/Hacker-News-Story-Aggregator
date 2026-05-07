@@ -18,7 +18,7 @@ export default function LoginPage() {
             const { data } = await login(formData);
             loginUser(data.user, data.token);
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Login failed');
+            // Error is handled by global API interceptor
         } finally {
             setLoading(false);
         }
