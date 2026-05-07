@@ -8,20 +8,29 @@ const scrapeHackerNews = async () => {
         const $ = cheerio.load(data);
         const stories = [];
 
-        $('.athing').slice(0, 10).each((index, element) => {
+        $('.athing').slice(0, 30).each((index, element) => {
             const titleElement = $(element).find('.titleline > a');
             const title = titleElement.text();
-            const url = titleElement.attr('href');
+            let url = titleElement.attr('href');
+
+            // Fix relative URLs (e.g. "item?id=12345" for Ask HN, Show HN, etc.)
+            if (url && !url.startsWith('http')) {
+                url = `https://news.ycombinator.com/${url}`;
+            }
             
             const subtext = $(element).next();
             const points = parseInt(subtext.find('.score').text()) || 0;
             const author = subtext.find('.hnuser').text() || 'N/A';
             const postedAt = subtext.find('.age').text() || 'N/A';
+            // Grab the HN discussion link (always available)
+            const itemId = $(element).attr('id');
+            const hnLink = itemId ? `https://news.ycombinator.com/item?id=${itemId}` : null;
 
             if (title && url) {
                 stories.push({
                     title,
                     url,
+                    hnLink,
                     points,
                     author,
                     postedAt

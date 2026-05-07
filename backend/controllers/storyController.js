@@ -16,15 +16,15 @@ exports.getStories = async (req, res) => {
 
         const total = await Story.countDocuments();
 
-        res.status(200).json({ 
-            success: true, 
+        res.status(200).json({
+            success: true,
             count: stories.length,
             pagination: {
                 total,
                 page,
                 pages: Math.ceil(total / limit)
             },
-            data: stories 
+            data: stories
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -79,8 +79,8 @@ exports.toggleBookmark = async (req, res) => {
             ).select('bookmarks');
         }
 
-        res.status(200).json({ 
-            success: true, 
+        res.status(200).json({
+            success: true,
             message: isBookmarked ? 'Bookmark removed' : 'Bookmark added',
             bookmarks: updatedUser.bookmarks.map(id => id.toString())
         });
@@ -95,15 +95,15 @@ exports.toggleBookmark = async (req, res) => {
 exports.getBookmarks = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).populate('bookmarks');
-        
+
         // Filter out any bookmarks that could not be populated (e.g., if story was deleted)
         // This ensures the frontend doesn't receive null values which could cause crashes
         const validBookmarks = (user.bookmarks || []).filter(story => story !== null);
-        
-        res.status(200).json({ 
-            success: true, 
-            count: validBookmarks.length, 
-            data: validBookmarks 
+
+        res.status(200).json({
+            success: true,
+            count: validBookmarks.length,
+            data: validBookmarks
         });
     } catch (error) {
         console.error('Get Bookmarks error:', error);

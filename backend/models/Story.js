@@ -22,6 +22,10 @@ const storySchema = new mongoose.Schema({
     postedAt: {
         type: String,
         required: [true, 'Please add posted time']
+    },
+    hnLink: {
+        type: String,
+        default: null
     }
 }, {
     timestamps: true

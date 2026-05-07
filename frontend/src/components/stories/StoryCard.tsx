@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { ThumbsUp, User, Clock, Globe, ArrowUpRight } from 'lucide-react';
+import { ThumbsUp, User, Clock, Globe, ArrowUpRight, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Badge from '../ui/Badge';
 import BookmarkButton from './BookmarkButton';
@@ -14,6 +14,7 @@ interface Story {
   postedAt: string;
   description?: string;
   image?: string;
+  hnLink?: string;
 }
 
 interface StoryCardProps {
@@ -157,10 +158,24 @@ const StoryCard: React.FC<StoryCardProps> = ({ story, isBookmarked, onBookmarkTo
                             isBookmarked={!!isBookmarked}
                             onClick={() => onBookmarkToggle?.(story._id)}
                         />
+                        {/* HN discussion link — only shown when available */}
+                        {story.hnLink && (
+                            <a
+                                href={story.hnLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="View HN discussion"
+                                className="w-10 h-10 bg-surface rounded-xl flex items-center justify-center text-text-secondary hover:text-amber-500 hover:bg-amber-50 transition-all"
+                            >
+                                <MessageSquare size={16} />
+                            </a>
+                        )}
+                        {/* External article link */}
                         <a
                             href={story.url}
                             target="_blank"
                             rel="noopener noreferrer"
+                            title="Open article"
                             className="w-10 h-10 bg-surface rounded-xl flex items-center justify-center text-text-secondary hover:text-violet-primary hover:bg-violet-soft transition-all"
                         >
                             <ArrowUpRight size={16} />

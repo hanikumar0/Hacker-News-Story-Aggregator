@@ -37,10 +37,13 @@ export default function Feed() {
         try {
             setSyncing(true);
             await triggerScrape();
-            toast.success('System synchronized');
-            getStories();
+            // Small delay to let MongoDB writes fully commit before we read
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await getStories(); // FIXED: must await so feed updates after scrape
+            toast.success('Feed synchronized — new stories loaded');
         } catch (error) {
-            toast.error('Sync failed');
+            console.error('Sync error:', error);
+            toast.error('Sync failed — check your connection');
         } finally {
             setSyncing(false);
         }
