@@ -6,11 +6,11 @@ const User = require('../models/User');
 exports.getStories = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        const limit = parseInt(req.query.limit) || 30; // show all scraped stories
         const skip = (page - 1) * limit;
 
         const stories = await Story.find()
-            .sort({ points: -1 })
+            .sort({ updatedAt: -1 }) // newest/recently updated first — critical for sync
             .skip(skip)
             .limit(limit);
 

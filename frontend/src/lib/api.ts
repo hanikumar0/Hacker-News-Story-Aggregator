@@ -16,10 +16,19 @@ API.interceptors.request.use((config) => {
 
 export const login = (data: any) => API.post('/auth/login', data);
 export const register = (data: any) => API.post('/auth/register', data);
-export const fetchStories = () => API.get('/stories');
+
+// Always bust the browser cache for story fetches so Sync Now returns fresh data
+export const fetchStories = () => API.get('/stories', {
+    headers: { 'Cache-Control': 'no-cache' },
+    params: { _t: Date.now() }, // cache-busting timestamp param
+});
+
 export const fetchStoryById = (id: string) => API.get(`/stories/${id}`);
 export const toggleBookmark = (id: string) => API.post(`/stories/${id}/bookmark`);
-export const fetchBookmarks = () => API.get('/stories/bookmarks');
+export const fetchBookmarks = () => API.get('/stories/bookmarks', {
+    headers: { 'Cache-Control': 'no-cache' },
+    params: { _t: Date.now() },
+});
 export const triggerScrape = () => API.post('/scrape');
 
 export default API;

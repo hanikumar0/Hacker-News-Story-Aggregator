@@ -36,14 +36,31 @@ export default function Feed() {
     const handleSync = async () => {
         try {
             setSyncing(true);
+
+            // Step 1: trigger the scraper — this upserts fresh HN data into DB
             await triggerScrape();
-            // Small delay to let MongoDB writes fully commit before we read
-            await new Promise(resolve => setTimeout(resolve, 500));
-            await getStories(); // FIXED: must await so feed updates after scrape
-            toast.success('Feed synchronized — new stories loaded');
-        } catch (error) {
-            console.error('Sync error:', error);
-            toast.error('Sync failed — check your connection');
+
+            // Step 2: fetch the updated feed with cache-busting
+            // Use a slightly longer delay to ensure all upserts committed
+            await new Promise(resolve => setTimeout(resolve, 800));
+            const { data } = await fetchStories();
+            const freshStories: any[] = data.data || [];
+
+            // Step 3: replace state with fresh data, deduplicated by _id
+            const seen = new Set<string>();
+            const deduplicated = freshStories.filter(s => {
+                if (seen.has(s._id)) return false;
+                seen.add(s._id);
+                return true;
+            });
+
+            setStories(deduplicated);
+
+            const newCount = deduplicated.length;
+            toast.success(`Feed updated — ${newCount} stories loaded`);
+        } catch (error: any) {
+            console.error('[Sync] Error:', error?.response?.data || error);
+            toast.error('Sync failed — please try again');
         } finally {
             setSyncing(false);
         }
